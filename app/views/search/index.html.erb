@@ -1,0 +1,101 @@
+<%= stylesheet_link_tag 'search_index' %>
+<div class="header">
+  <header>
+    <h1>Finding Yummy</h1>
+    <% if user_signed_in? %>
+      <%= link_to 'マイページ', mypage_path, class: 'header_mypage' %>
+    <% else %>
+      <%= link_to 'マイページ', new_user_session_path, class: 'header_mypage' %>
+    <% end %>
+  </header>
+</div>
+<div class="searchmenu">
+  <%= form_with url: new_search_path, method: :get, class: "search_menu" do |form| %>
+      <div class="money">
+        <%= form.label :average_price, "平均価格" %>
+        <%= form.select :average_price, options_for_select([ ['1000円以下', '1000'], ['2000円以下', '2000'], ['3000円以下', '3000']]) %>
+      </div>
+      <div class="genre">
+        <%= form.label :genre, "ジャンル" %>
+        <%= form.select :genre, options_for_select([ ['ジャンル1', 'genre1'], ['ジャンル2', 'genre2']]) %>
+      </div>
+      <div class="keyword">
+        <%= form.label :keyword, "キーワード" %>
+        <%= form.text_field :keyword %>
+        <%= form.select :distance, options_for_select([['選択してください', ''], ['1km', '1'], ['2km', '2'], ['3km', '3']]) %>
+      </div>
+      <%= form.submit "検索開始" %>
+  <% end %>
+</div>
+<div class="resaltinfo">
+  <% @shops.each do |shop| %>
+    <div class="shopinfo">
+      <div class="detailadd">
+        <div class="detailpoint">
+          <div class="detail">
+            <div class="photo">
+              <!-- 写真 -->
+              <% if shop['photo']['pc']['l'].present? %>
+                <img src="<%= shop['photo']['pc']['l'] %>" alt="<%= shop['name'] %>の大きな写真（PC向け）">
+              <% end %>
+            </div>
+            <table border="1">
+              <tr>
+                <!-- 名前、キャッチ-->
+                <td colspan="3">
+                  <strong><%= link_to "#{shop['name']}/#{shop['catch']}", search_path(id: shop['id']) %></strong>
+                </td>
+              </tr>
+              <tr align="center">
+                <td colspan="3">
+                  <!-- アクセス、ジャンル、サブジャンル -->
+                  <%= shop['address'] %> <br>
+                  <% if shop['genre'] && shop['sub_genre'] %>
+                    <%= shop['access'] %>/<%= shop['genre']['name'] %><%= shop['sub_genre']['name'] %>
+                  <% elsif shop['genre'] %>
+                    <%= shop['access'] %>/<%= shop['genre']['name'] %>
+                  <% else %>
+                    <%= shop['access'] %>
+                  <% end %>
+                </td>
+              </tr>
+              <tr>
+                <!-- km now 円 -->
+                <td><%= shop['distance'] %></td>
+                <td>　<%= shop['now'] %>　</td>
+                <td><%= shop['budget']['average'] || '情報なし' %></td>
+              </tr>
+            </table>
+          </div>
+          <div class="point">
+            <table border="1">
+              <tr>
+                <td class="plas">
+                  <strong><p>  0P  </p></strong>
+                </td>
+                <td class="minus">
+                  <strong><p>  0P  </p></strong>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <div class="add">
+          <%= form.hidden_field :bookmark_id, value: bookmark.id %> # パラメータ名を修正
+            <% if user_signed_in? && shop['book'] == 0 %>
+              <%= form.hidden_field :shop_id, value: shop['id'] %>
+              <%= form.hidden_field :shop_name, value: "#{shop['name']}/#{shop['catch']}" %>
+              <%= form.hidden_field :scroll_position, id: "scroll_position" %>
+              <%= form.submit "ブックマーク" %>
+            <% end %>
+            <%= link_to "地図を開く", "https://www.google.com/maps/search/?api=1&query=#{URI.encode_www_form_component(shop['address'])}", target: "_blank" %>
+            <%= link_to "店舗URL", shop['urls']['pc'], target: "_blank" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+<%= link_to '前のページ', search_index_path(page: @page - 1, latitude: params[:latitude], longitude: params[:longitude], distance: params[:distance]) if @page > 1 %>
+<% if (@page * @num) < @total_results %>
+  <%= link_to '次のページ', search_index_path(page: @page + 1, latitude: params[:latitude], longitude: params[:longitude], distance: params[:distance]) %>
+<% end %>

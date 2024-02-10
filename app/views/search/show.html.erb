@@ -1,0 +1,65 @@
+<div class="header">
+  <header>
+    <h1>Finding Yummy</h1>
+    <div class="header_menue">
+      <% if user_signed_in? %>
+        <%= link_to 'マイページ', mypage_path, class: 'header_mypage', target: "_blank" %>
+        <!-- 本当はリンクが良かったのですが、どう頑張ってもGETでしか送れず諦めました -->
+        <%= button_to 'Sign out', destroy_user_session_path, method: :delete %>
+      <% else %>
+        <%= link_to 'ログイン', new_user_session_path, class: 'header_mypage' %>
+      <% end %>
+    </div>
+  </header>
+</div>
+  <div class="searchmenu">
+    <%= form_with url: new_search_path, method: :get, class: "search_menu" do |form| %>
+        <div class="money">
+          <%= form.label :average_price, "平均価格" %>
+          <%= form.select :average_price, options_for_select([ ['1000円以下', '1000'], ['2000円以下', '2000'], ['3000円以下', '3000']]) %>
+        </div>
+        <div class="genre">
+          <%= form.label :genre, "ジャンル" %>
+          <%= form.select :genre, options_for_select([ ['ジャンル1', 'genre1'], ['ジャンル2', 'genre2']]) %>
+        </div>
+        <div class="keyword">
+          <%= form.label :keyword, "キーワード" %>
+          <%= form.text_field :keyword %>
+          <%= form.select :distance, options_for_select([['選択してください', ''], ['1km', '1'], ['2km', '2'], ['3km', '3']]) %>
+        </div>
+        <%= form.submit "検索開始" %>
+    <% end %>
+  </div>
+
+
+<div class="show_shopinfo">
+  <img class="shop-image" src="<%= @shop['photo']['pc']['l'] %>" alt="<%= @shop['name'] %>の画像">
+
+  <h1><%= @shop['name'] %></h1>
+  <p>予約する</p>
+  <a href="<%= @shop['urls']['pc'] %>" target="_blank" rel="noopener noreferrer"><%= @shop['urls']['pc'] %></a>
+  <% if @shop['genre'] %>
+    <p><%= @shop['genre']['name'] %></p>
+    <% if @shop['genre']['sub'] %>
+      <p><%= @shop['genre']['sub'] %></p>
+    <% end %>
+  <% end %>
+
+  <p><%= @shop['address'] %></p>
+  <p><%= @shop['station_name'] %></p>
+  <p><%= @shop['access'] %></p>
+
+  <p><%= @shop['distance'] %></p>
+
+  <p>ランチ：<%= @shop['lunch'] %></p>
+  <p><%= @shop['open'] %></p>
+  <p><%= @shop['close'] %></p>
+  <p>23時以降も: <%= @shop['midnight'] %></p>
+
+  <p><%= @shop['budget']['average'] %></p>
+  <p><%= @shop['budget_memo'] %></p>
+  <% if @shop['coupon_urls'] %>
+    <p>クーポンURL</p>
+    <a href="<%= @shop['coupon_urls']['pc'] %>" target="_blank" rel="noopener noreferrer"><%= @shop['coupon_urls']['pc'] %></a>
+  <% end %>
+</div>
